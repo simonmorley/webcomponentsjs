@@ -182,6 +182,11 @@ window.ShadowDOMPolyfill = {};
 
   function getDescriptor(source, name) {
     try {
+      // getOwnPropertyDescriptor in Safari on iOS 10.0.1 returns
+      // undefined for these values, which would cause an exception later.
+      if (source === window && name === 'showModalDialog') {
+        return dummyDescriptor;
+      }
       return Object.getOwnPropertyDescriptor(source, name);
     } catch (ex) {
       // JSC and V8 both use data properties instead of accessors which can
@@ -190,7 +195,7 @@ window.ShadowDOMPolyfill = {};
       return dummyDescriptor;
     }
   }
-
+  
   // Safari 8 exposes WebIDL attributes as an invalid accessor property. Its
   // descriptor has {get: undefined, set: undefined}. We therefore ignore the
   // shape of the descriptor and make all properties read-write.
